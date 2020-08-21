@@ -11,4 +11,4 @@ bin           = @["raycaster"]
 
 # Dependencies
 
-requires "nim >= 1.2.6"
+requires "nim >= 1.2.6", "sdl2 >= 2.0.2"
