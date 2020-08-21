@@ -23,6 +23,10 @@ func generateLevel(width, height: int): Level =
     result[0][y] = tWall
     result[width-1][y] = tWall
 
+  # add some more cubes for fun
+  for i in 2..(min(width, height) div 3):
+    result[i][i] = tWall
+
 
 func initGame*(levelWidth, levelHeight: int): (Player, Level) =
   var
