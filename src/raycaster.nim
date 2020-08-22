@@ -10,7 +10,8 @@ const
 let
   COLOR_SKY = color(165, 230, 230, 255)
   COLOR_FLOOR = color(100, 120, 100, 255)
-  COLOR_WALL = color(160, 160, 160, 255)
+  COLOR_STONE = color(160, 160, 160, 255)
+  COLOR_WOOD = color(118, 100, 70, 255)
 
 var
   window: WindowPtr
@@ -36,6 +37,14 @@ proc init() =
   (player, level) = initGame(30, 30)
 
 
+proc moveOnEmptyCells(pos: var Vec2, newPos: Vec2) =
+  ## Seperately sets pos' axes to newPos if the new position doesn't collide
+  if level[int(newPos.x)][int(pos.y)] == tFloor:
+    pos.x = newPos.x
+  if level[int(pos.x)][int(newPos.y)] == tFloor:
+    pos.y = newPos.y
+
+
 proc update(delta: float) =
   while pollEvent(evt):
     if evt.kind == QuitEvent:
@@ -49,17 +58,11 @@ proc update(delta: float) =
 
   if kbState[int SDL_SCANCODE_UP] == 1:
     let newPos = player.position + player.direction * moveSpeed
-    if level[int(newPos.x)][int(player.position.y)] == tFloor:
-      player.position.x = newPos.x
-    if level[int(player.position.x)][int(newPos.y)] == tFloor:
-      player.position.y = newPos.y
+    player.position.moveOnEmptyCells(newPos)
 
   if kbState[int SDL_SCANCODE_DOWN] == 1:
     let newPos = player.position - player.direction * moveSpeed
-    if level[int(newPos.x)][int(player.position.y)] == tFloor:
-      player.position.x = newPos.x
-    if level[int(player.position.x)][int(newPos.y)] == tFloor:
-      player.position.y = newPos.y
+    player.position.moveOnEmptyCells(newPos)
 
   if kbState[int SDL_SCANCODE_LEFT] == 1:
     player.direction = player.direction.rotatedBy(rotSpeed)
@@ -141,13 +144,22 @@ proc draw() =
       lineSize = int(float(SCREEN_HEIGHT) / dist)
       drawStart = max(0.cint, cint(SCREEN_HEIGHT div 2 - lineSize div 2))
       drawEnd = min(SCREEN_HEIGHT, cint(SCREEN_HEIGHT div 2 + lineSize div 2))
+      drawColor: Color
+
+    # determine color of pixel column
+    case level[cell]:
+      of tStoneWall:
+        drawColor = COLOR_STONE
+      of tWoodWall:
+        drawColor = COLOR_WOOD
+      else:
+        drawColor = COLOR_SKY
 
     if side == Axis.X:
-      render.setDrawColor(COLOR_WALL * 0.8)
-    else:
-      render.setDrawColor(COLOR_WALL)
-    render.drawLine(cint(x), drawStart, cint(x), drawEnd)
+      drawColor *= 0.9
 
+    render.setDrawColor(drawColor)
+    render.drawLine(cint(x), drawStart, cint(x), drawEnd)
 
 
 proc main() =
